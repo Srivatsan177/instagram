@@ -16,5 +16,6 @@ class ImageCreateSuccessSchema(BaseModel):
 
 
 class ImageSchema(BaseModel):
+    id: str
     caption: str
     image_url: str

@@ -1,3 +1,5 @@
+import typing
+
 from fastapi import APIRouter, Depends, HTTPException
 from core.schemas.ImageSchema import (
     ImageCreateSchema,
@@ -11,6 +13,27 @@ from lib.utils.s3_util import get_pre_signed_url
 from http import HTTPStatus
 
 router = APIRouter(prefix="/images")
+
+
+@router.get("")
+def get_images(
+    page: int = 0, limit: int = 5, current_user=Depends(get_user)
+) -> typing.List[ImageSchema]:
+    images = Image.objects.order_by("-id")[page * limit : (page + 1) * limit]
+    images = [
+        ImageSchema(
+            id=str(image.id),
+            image_url=get_pre_signed_url(
+                str(image.id),
+                image.image_location,
+                image.image_location.split(".")[1],
+                "get",
+            ),
+            caption=image.caption,
+        )
+        for image in images
+    ]
+    return images
 
 
 @router.get("/get-image/{image_id}")
