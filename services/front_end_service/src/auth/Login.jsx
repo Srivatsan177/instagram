@@ -39,6 +39,7 @@ function Login() {
         navigate("/");
       })
       .catch((error) => {
+        console.log(error);
         setError("Invalid username or password.");
         // Handle errors (e.g., display error message)
       });

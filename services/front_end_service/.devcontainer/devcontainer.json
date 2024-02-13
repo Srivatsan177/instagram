@@ -1,0 +1,10 @@
+{
+    "name": "Front end service",
+    "dockerFile": "../Dockerfile",
+    // "workspaceMount": "source=${localWorkspaceFolder},target=/workspace,type=bind,consistency=cached",
+    "mounts": [
+        "source=${localWorkspaceFolder},target=/workspace,type=bind,consistency=cached",
+        "source=/home/srivatsan/.aws/,target=/root/.aws,type=bind,consistency=cached"
+    ],
+    "workspaceFolder": "/workspace"
+}

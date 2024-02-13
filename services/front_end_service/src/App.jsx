@@ -4,17 +4,18 @@ import {Button, AppBar, Toolbar} from "@mui/material";
 import theme from "./assets/theme";
 import Login from "./auth/Login";
 import Signup from "./auth/Signup";
-import { BrowserRouter, Routes, Route } from "react-router-dom";
+import { BrowserRouter, Routes, Route, redirect } from "react-router-dom";
 import { CookiesProvider, useCookies } from "react-cookie";
 import { Home } from "./images/Home";
 function App() {
+  // comment
   return (
     <ThemeProvider theme={theme}>
       <CookiesProvider>
         <AppBar position="static">
           <Toolbar sx={{ display: "flex", justifyContent: "space-between" }}>
             {/* Your logo or brand name here */}
-            <a href="/">SrInstagram</a>
+            <a href="/" style={{color: "white", textDecoration: "none"}}>SrInstagram</a>
 
             <Button variant="contained" color="primary">
               Login

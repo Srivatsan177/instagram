@@ -28,8 +28,6 @@ const ImageUpload = () => {
   const handleUpload = () => {
     // Implement your upload logic here
     // Example: send the file to your server using FormData
-    const formData = new FormData();
-    formData.append("file", selectedFile);
     const cookie = new Cookies();
     const accessToken = cookie.get("refresh_token");
     const payload = {
@@ -46,27 +44,12 @@ const ImageUpload = () => {
         const presignedPutURL = response.data.presigned_url;
 
         async function uploadFileToS3(file, preSignedUrl) {
-          const formData = new FormData();
-          formData.append("file", file);
 
           try {
-            fetch(
-              preSignedUrl,
-              { method: "PUT", body: formData },
-              {
-                 //       (progressEvent.loaded * 100) / progressEvent.total
-                //     );
-                //     console.log(`Upload progress: ${percentage}%`);
-                //   },//   onUploadProgress: (progressEvent) => {
-                //     const percentage = Math.round(
-               
-              }
-            )
-              .then(() => console.log("upload first promise"))
-              .then(() => alert("uploaded"))
-              .catch((err) => console.log(err));
-
-            console.log("File uploaded successfully!");
+            await await fetch(preSignedUrl, {
+              method: "PUT",
+              body: file,
+          })
           } catch (error) {
             console.error("Error uploading file:", error);
           }

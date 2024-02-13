@@ -1,0 +1,14 @@
+{
+    "name": "Image serivce docker",
+    "dockerFile": "../Dockerfile",
+    "context": "${localWorkspaceFolder}/../../",
+    // "workspaceMount": "source=${localWorkspaceFolder}/../../,target=/usr/app,type=bind,consistency=cached",
+    "mounts": [
+        "source=${localWorkspaceFolder}/../../,target=/usr/app,type=bind,consistency=cached",
+        "source=/home/srivatsan/.aws/,target=/root/.aws,type=bind,consistency=cached"
+    ],
+    "workspaceFolder": "/usr/app",
+    "settings": {
+        "terminal.integrated.cwd": "/usr/app/services/image_service",
+    }
+}

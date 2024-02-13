@@ -1,0 +1,14 @@
+{
+    "name": "From Docker file",
+    "dockerFile": "../Dockerfile",
+    "context": "${localWorkspaceFolder}/../../",
+    // "workspaceMount": "source=${localWorkspaceFolder}/../../,target=/usr/app,type=bind,consistency=cached",
+    "mounts": [
+        "source=${localWorkspaceFolder}/../../,target=/usr/app,type=bind,consistency=cached",
+        "source=/home/srivatsan/.aws/,target=/.aws,type=bind,consistency=cached"
+    ],
+    "workspaceFolder": "/usr/app",
+    "settings": {
+        "terminal.integrated.cwd": "./services/user_service"
+    }
+}
