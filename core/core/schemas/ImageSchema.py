@@ -19,3 +19,8 @@ class ImageSchema(BaseModel):
     id: str
     caption: str
     image_url: str
+    like_count: int
+
+class ImageLikeSchema(BaseModel):
+    image_id: str
+    like_count: int

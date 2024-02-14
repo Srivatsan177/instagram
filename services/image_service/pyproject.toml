@@ -10,6 +10,7 @@ python = "^3.11"
 fastapi = {extras = ["all"], version = "^0.109.0"}
 core = {path = "../../core", develop = true}
 black = "^23.12.1"
+redis = "^5.0.1"
 
 
 [build-system]

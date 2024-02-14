@@ -1,14 +1,14 @@
 {
-    "name": "Like Runner service",
+    "name": "Image serivce docker",
     "dockerFile": "../Dockerfile",
     "context": "${localWorkspaceFolder}/../../",
     // "workspaceMount": "source=${localWorkspaceFolder}/../../,target=/usr/app,type=bind,consistency=cached",
     "mounts": [
         "source=${localWorkspaceFolder}/../../,target=/usr/app,type=bind,consistency=cached",
-        "source=/home/srivatsan/.aws/,target=/.aws,type=bind,consistency=cached"
+        "source=/home/srivatsan/.aws/,target=/root/.aws,type=bind,consistency=cached"
     ],
     "workspaceFolder": "/usr/app",
     "settings": {
-        "terminal.integrated.cwd": "./services/user_service"
+        "terminal.integrated.cwd": "/usr/app/services/like_service",
     }
 }

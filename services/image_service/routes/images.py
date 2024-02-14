@@ -1,3 +1,5 @@
+from dotenv import load_dotenv
+load_dotenv("../../.env")
 import typing
 
 from fastapi import APIRouter, Depends, HTTPException
@@ -6,11 +8,19 @@ from core.schemas.ImageSchema import (
     ImageCreateResponseSchema,
     ImageCreateSuccessSchema,
     ImageSchema,
+    ImageLikeSchema
 )
 from core.utils.auth import get_user
-from core.models.Image import Image
+from core.utils.redis import get_redis_client
+from core.models.Image import Image, ImageLike
 from lib.utils.s3_util import get_pre_signed_url
 from http import HTTPStatus
+import boto3
+import os
+import json
+import redis
+
+queue_url = os.environ["SQS_QUEUE_LIKE_URL"]
 
 router = APIRouter(prefix="/images")
 
@@ -30,11 +40,19 @@ def get_images(
                 "get",
             ),
             caption=image.caption,
+
         )
         for image in images
     ]
     return images
 
+@router.get("/like-count/")
+def get_likes(image_ids: str, redis_client:redis.Redis=Depends(get_redis_client)) -> typing.List[ImageLikeSchema]:
+    resp = []
+    for image_id in image_ids.split(","):
+        like_count = redis_client.get(f"image_like:{image_id}")
+        resp.append(ImageLikeSchema(image_id=image_id, like_count=like_count if like_count is not None else 0))
+    return resp
 
 @router.get("/get-image/{image_id}")
 def get_image(image_id: str, current_user=Depends(get_user)) -> ImageSchema:
@@ -83,3 +101,26 @@ def post_image_success(image_info: ImageCreateSuccessSchema) -> str:
     image.visible = True
     image.save()
     return "Image uploaded successfully"
+
+
+@router.post("/like-image/{image_id}")
+def like_image(image_id: str, current_user=Depends(get_user)) -> bool:
+    sqs_client = boto3.client('sqs')
+    
+    image_like = ImageLike.objects.filter(image_id=image_id, user_id=str(current_user.id)).first()
+    if image_like is None:
+        image_like = ImageLike(image_id=image_id, user_id=str(current_user.id))
+        image_like.save()
+        sqs_client.send_message(
+            QueueUrl=queue_url,
+            MessageBody=json.dumps({"image_id": image_id, "like_count": 1}),
+        )
+        return True
+    else:
+        image_like.delete()
+        image_like.save()
+        sqs_client.send_message(
+            QueueUrl=queue_url,
+            MessageBody=json.dumps({"image_id": image_id, "like_count": -1}),
+        )
+        return False

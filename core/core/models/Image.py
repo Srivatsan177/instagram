@@ -15,3 +15,8 @@ class Image(Document):
     likes = IntField(default=0)
     visible = BooleanField(default=False)
     user_id = ObjectIdField()
+
+
+class ImageLike(Document):
+    image_id=StringField(required=True, unique=True)
+    user_id=StringField(required=True, unique=True)
