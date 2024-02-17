@@ -7,4 +7,4 @@
         "source=/home/srivatsan/.aws/,target=/root/.aws,type=bind,consistency=cached"
     ],
     "workspaceFolder": "/workspace"
-}
+} 

@@ -1,5 +1,5 @@
 {
-    "name": "Image serivce docker",
+    "name": "Like serivce docker",
     "dockerFile": "../Dockerfile",
     "context": "${localWorkspaceFolder}/../../",
     // "workspaceMount": "source=${localWorkspaceFolder}/../../,target=/usr/app,type=bind,consistency=cached",

@@ -1,5 +1,5 @@
 {
-    "name": "Like Runner service",
+    "name": "User service",
     "dockerFile": "../Dockerfile",
     "context": "${localWorkspaceFolder}/../../",
     // "workspaceMount": "source=${localWorkspaceFolder}/../../,target=/usr/app,type=bind,consistency=cached",

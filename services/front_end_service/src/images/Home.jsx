@@ -65,11 +65,11 @@ export const Home = () => {
 
   // Render the fetched data here based on its structure
   return (
-    <div>
+    <div style={{marginTop: 10}}>
       <Grid container spacing={2}>
         {data.map((item, index) => (
           <Grid item xs={4} key={index}>
-            <Paper style={{ padding: 20, textAlign: "center" }}><ImageItem {...item} /></Paper>
+            <Paper style={{ padding: 20 }}><ImageItem {...item} /></Paper>
           </Grid>
         ))}
       </Grid>

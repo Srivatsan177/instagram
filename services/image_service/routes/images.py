@@ -1,4 +1,5 @@
 from dotenv import load_dotenv
+
 load_dotenv("../../.env")
 import typing
 
@@ -8,7 +9,7 @@ from core.schemas.ImageSchema import (
     ImageCreateResponseSchema,
     ImageCreateSuccessSchema,
     ImageSchema,
-    ImageLikeSchema
+    ImageLikeSchema,
 )
 from core.utils.auth import get_user
 from core.utils.redis import get_redis_client
@@ -20,7 +21,8 @@ import os
 import json
 import redis
 
-queue_url = os.environ["SQS_QUEUE_LIKE_URL"]
+like_queue_url = os.environ["SQS_QUEUE_LIKE_URL"]
+delete_queue_url = os.environ["SQS_QUEUE_DELETE_URL"]
 
 router = APIRouter(prefix="/images")
 
@@ -29,7 +31,7 @@ router = APIRouter(prefix="/images")
 def get_images(
     page: int = 0, limit: int = 5, current_user=Depends(get_user)
 ) -> typing.List[ImageSchema]:
-    images = Image.objects.order_by("-id")[page * limit : (page + 1) * limit]
+    images = Image.objects.filter(is_deleted=False).order_by("-id")[page * limit : (page + 1) * limit]
     images = [
         ImageSchema(
             id=str(image.id),
@@ -40,19 +42,34 @@ def get_images(
                 "get",
             ),
             caption=image.caption,
-
+            liked_by_user=True
+            if ImageLike.objects.filter(
+                user_id=str(current_user.id), image_id=str(image.id)
+            ).first()
+            is not None
+            else False,
+            own_user=str(image.user_id) == str(current_user.id)
         )
         for image in images
     ]
     return images
 
+
 @router.get("/like-count/")
-def get_likes(image_ids: str, redis_client:redis.Redis=Depends(get_redis_client)) -> typing.List[ImageLikeSchema]:
+def get_likes(
+    image_ids: str, redis_client: redis.Redis = Depends(get_redis_client)
+) -> typing.List[ImageLikeSchema]:
     resp = []
     for image_id in image_ids.split(","):
         like_count = redis_client.get(f"image_like:{image_id}")
-        resp.append(ImageLikeSchema(image_id=image_id, like_count=like_count if like_count is not None else 0))
+        resp.append(
+            ImageLikeSchema(
+                image_id=image_id,
+                like_count=like_count if like_count is not None else 0,
+            )
+        )
     return resp
+
 
 @router.get("/get-image/{image_id}")
 def get_image(image_id: str, current_user=Depends(get_user)) -> ImageSchema:
@@ -102,17 +119,36 @@ def post_image_success(image_info: ImageCreateSuccessSchema) -> str:
     image.save()
     return "Image uploaded successfully"
 
+@router.delete("/{image_id}")
+def delete_image(image_id: str, current_user=Depends(get_user)) -> bool:
+    image = Image.objects.filter(id=image_id).first()
+    if image is None:
+        raise HTTPException(HTTPStatus.NOT_FOUND, detail="Image not found")
+    if str(image.user_id) != str(current_user.id):
+        raise HTTPException(HTTPStatus.METHOD_NOT_ALLOWED, detail="Not owner of the image")
+    
+    sqs_client = boto3.client("sqs")
+    sqs_client.send_message(
+            QueueUrl=delete_queue_url,
+            MessageBody=json.dumps({"image_id": image_id}),
+        )
+    image.deleted = True
+    image.save()
+    return True
+
 
 @router.post("/like-image/{image_id}")
 def like_image(image_id: str, current_user=Depends(get_user)) -> bool:
-    sqs_client = boto3.client('sqs')
-    
-    image_like = ImageLike.objects.filter(image_id=image_id, user_id=str(current_user.id)).first()
+    sqs_client = boto3.client("sqs")
+
+    image_like = ImageLike.objects.filter(
+        image_id=image_id, user_id=str(current_user.id)
+    ).first()
     if image_like is None:
         image_like = ImageLike(image_id=image_id, user_id=str(current_user.id))
         image_like.save()
         sqs_client.send_message(
-            QueueUrl=queue_url,
+            QueueUrl=like_queue_url,
             MessageBody=json.dumps({"image_id": image_id, "like_count": 1}),
         )
         return True
@@ -120,7 +156,7 @@ def like_image(image_id: str, current_user=Depends(get_user)) -> bool:
         image_like.delete()
         image_like.save()
         sqs_client.send_message(
-            QueueUrl=queue_url,
+            QueueUrl=like_queue_url,
             MessageBody=json.dumps({"image_id": image_id, "like_count": -1}),
         )
         return False
