@@ -4,7 +4,7 @@ import typing
 import boto3
 
 S3_BUCKET_NAME = os.environ["S3_BUCKET_NAME"]
-S3_PREFIX_IMAGES = "images"
+S3_PREFIX_IMAGES = "users"
 GET_OBJECT_EXPIRY = 60 * 60 * 12
 PUT_OBJECT_EXPIRY = 60 * 5
 
@@ -12,7 +12,6 @@ PUT_OBJECT_EXPIRY = 60 * 5
 def get_pre_signed_url(
     object_id: str,
     file_name: str,
-    file_type: str,
     url_type: typing.Literal["put", "get"] = "get",
 ):
     s3_client = boto3.client("s3")

@@ -4,9 +4,9 @@ import FavoriteIcon from '@mui/icons-material/Favorite';
 import FavoriteBorderIcon from '@mui/icons-material/FavoriteBorder';
 import DeleteOutlineIcon from '@mui/icons-material/DeleteOutline';
 
-function HeartIconLabel({ count, onClick, onDelete,size = 'medium', color = 'secondary', liked }) {
+function HeartIconLabel({ count, onClick, onDelete, size = 'medium', color = 'secondary', liked, ownUser }) {
   return (
-    <div style={{float: "right"}}>
+    <div style={{ float: "right" }}>
       <IconButton>
         <Badge badgeContent={count} color={color}>
           <Avatar onClick={onClick} sx={{ bgcolor: 'transparent', border: '1px solid', borderColor: `var(--${color})` }}>
@@ -14,9 +14,11 @@ function HeartIconLabel({ count, onClick, onDelete,size = 'medium', color = 'sec
           </Avatar>
         </Badge>
       </IconButton>
-      <IconButton onClick={onDelete}>
-        <DeleteOutlineIcon style={{color:"red"}} />
-      </IconButton>
+      {ownUser &&
+        <IconButton onClick={onDelete}>
+          <DeleteOutlineIcon style={{ color: "red" }} />
+        </IconButton>
+      }
     </div>
   );
 }

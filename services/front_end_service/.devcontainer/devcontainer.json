@@ -6,5 +6,11 @@
         "source=${localWorkspaceFolder},target=/workspace,type=bind,consistency=cached",
         "source=/home/srivatsan/.aws/,target=/root/.aws,type=bind,consistency=cached"
     ],
-    "workspaceFolder": "/workspace"
+    "workspaceFolder": "/workspace",
+    "settings": {
+        "extensions": [
+            "dsznajder.es7-react-js-snippets",
+            "esbenp.prettier-vscode"
+        ]
+    }
 } 

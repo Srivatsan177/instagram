@@ -21,6 +21,7 @@ class ImageSchema(BaseModel):
     image_url: str
     liked_by_user: bool
     own_user: bool
+    user_id: str
 
 class ImageLikeSchema(BaseModel):
     image_id: str

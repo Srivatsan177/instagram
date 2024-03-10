@@ -27,7 +27,7 @@ delete_queue_url = os.environ["SQS_QUEUE_DELETE_URL"]
 router = APIRouter(prefix="/images")
 
 
-@router.get("")
+@router.get("/")
 def get_images(
     page: int = 0, limit: int = 5, current_user=Depends(get_user)
 ) -> typing.List[ImageSchema]:
@@ -48,7 +48,8 @@ def get_images(
             ).first()
             is not None
             else False,
-            own_user=str(image.user_id) == str(current_user.id)
+            own_user=str(image.user_id) == str(current_user.id),
+            user_id=str(image.user_id)
         )
         for image in images
     ]
