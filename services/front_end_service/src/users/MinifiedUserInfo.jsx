@@ -17,7 +17,7 @@ import { setValue } from "../features/global/snackbar";
 export default function MinifiedUserInfo() {
   const dispatch = useDispatch();
   const { userId } = useParams();
-  const [user, setUser] = useState();
+  const [user, setUser] = useState({});
   const cookies = new Cookies();
   const access_token = cookies.get("access_token");
   const [flag, setFlag] = useState(false);
@@ -27,20 +27,34 @@ export default function MinifiedUserInfo() {
   useEffect(() => {
     axios
       .get(`${USER_API_URL}/users/info/${userId}`, { headers })
-      .then((resp) => setUser(resp.data))
+      .then((resp) => {
+        setUser((prev) => ({ ...prev, ...resp.data }));
+      })
       .catch((err) => console.error(err));
+    axios
+      .get(`${USER_API_URL}/users/follower-following-count/${userId}`, {
+        headers,
+      })
+      .then((resp) => setUser((prev) => ({ ...prev, ...resp.data })))
+      .catch((err) => console.log(err));
   }, []);
   useEffect(() => {
     axios
       .get(`${USER_API_URL}/users/info/${userId}`, { headers })
-      .then((resp) => setUser(resp.data))
+      .then((resp) => setUser((prev) => ({ ...prev, ...resp.data })))
       .catch((err) => console.error(err));
+    axios
+      .get(`${USER_API_URL}/users/follower-following-count/${userId}`, {
+        headers,
+      })
+      .then((resp) => setUser((prev) => ({ ...prev, ...resp.data })))
+      .catch((err) => console.log(err));
   }, [flag]);
   const handleSubmit = () => {
     axios
       .post(`${USER_API_URL}/users/follow/${user.id}`, {}, { headers })
       .then((resp) => {
-        if(resp.data) {
+        if (resp.data) {
           dispatch(setValue("Following User"));
         } else {
           dispatch(setValue("Un-Followed user"));
@@ -57,12 +71,17 @@ export default function MinifiedUserInfo() {
         </Typography>
         <img src={user?.image_s3_url} />
         <List>
-          <ListItem>Followers:</ListItem>
           <ListItem>
-            <Button onClick={handleSubmit}>
-              {user?.following ? "Un-Follow" : "Follow"}
-            </Button>
+            Followers:{user?.follower_count} | Following:{" "}
+            {user?.following_count}
           </ListItem>
+          {!user?.own_user && (
+            <ListItem>
+              <Button onClick={handleSubmit}>
+                {user?.following ? "Un-Follow" : "Follow"}
+              </Button>
+            </ListItem>
+          )}
         </List>
       </CardContent>
     </Card>

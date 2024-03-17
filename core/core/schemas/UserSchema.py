@@ -1,3 +1,5 @@
+import typing
+
 from pydantic import BaseModel
 
 
@@ -25,3 +27,4 @@ class MinifiedUserInfo(BaseModel):
     username: str
     image_s3_url: str
     following: bool
+    own_user: typing.Optional[bool] = False

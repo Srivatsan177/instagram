@@ -20,3 +20,7 @@ class UserLoginSchema(BaseModel):
 class JWTResponseSchema(BaseModel):
     access_token: str
     refresh_token: str
+
+class FollowerCount(BaseModel):
+    follower_count: int
+    following_count: int

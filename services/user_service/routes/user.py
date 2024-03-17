@@ -1,13 +1,16 @@
+import redis
 from fastapi import APIRouter, Depends, HTTPException
 from typing_extensions import Annotated
 from core.utils.auth import get_user
 from core.models.User import User, UserFollow
 from core.schemas.UserSchema import UserProfile, UpdateUserSchema, UserImageName, MinifiedUserInfo
 from lib.s3_utils import get_pre_signed_url
+from lib.schemas.user_schema import FollowerCount
 from http import HTTPStatus
 import os
 import boto3
 import json
+from core.utils.redis import get_redis_client
 
 router = APIRouter(prefix="/users")
 FOLLOW_QUEUE_URL = os.environ["SQS_QUEUE_FOLLOW_URL"]
@@ -43,7 +46,7 @@ def minified_user_info(user_id: str, current_user: Annotated[User, Depends(get_u
         user_follow = False
     else:
         user_follow = True
-    return MinifiedUserInfo(id=str(user.id), username=user.username, image_s3_url=image_location, following=user_follow)
+    return MinifiedUserInfo(id=str(user.id), username=user.username, image_s3_url=image_location, following=user_follow, own_user=str(user_id) == str(current_user.id))
 
 
 
@@ -89,3 +92,9 @@ def follow_user(user_id: str, current_user: Annotated[User, Depends(get_user)]) 
             MessageBody=json.dumps({"user_id": user_id, "follower_id": str(current_user.id), "count": -1}),
         )
     return False
+
+@router.get("/follower-following-count/{user_id}")
+def follower_following_count(user_id: str, current_user: Annotated[User, Depends(get_user)], redis_client: Annotated[redis.Redis, Depends(get_redis_client)]) -> FollowerCount:
+    follower_count = redis_client.get(f"follower:{user_id}")
+    following_count = redis_client.get(f"following:{user_id}")
+    return FollowerCount(follower_count = follower_count if following_count is not None else 0, following_count=following_count if following_count is not None else 0)
